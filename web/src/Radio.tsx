@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Announcer } from "../../src/commentary/announcers";
 import { generateBroadcast } from "../../src/commentary/broadcast";
 import type { GameResult } from "../../src/game";
-import { speak, useVoices } from "./announcerStore";
+import { canSpeak, hush, speak, useVoices } from "./announcerStore";
 import { Diamond } from "./Diamond";
 import { nameMap, walkoffIndex } from "./describe";
 import type { PlayEvent } from "../../src/game";
@@ -14,7 +14,8 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
   const colors = announcers.filter((a) => a.role === "color");
   const [pbpId, setPbpId] = useState(pbps[0]?.id ?? "");
   const [colorId, setColorId] = useState(colors[0]?.id ?? "none");
-  const [voiceOn, setVoiceOn] = useState(typeof speechSynthesis !== "undefined");
+  const [voiceOn, setVoiceOn] = useState(canSpeak);
+  const [silent, setSilent] = useState(false); // voice was asked for but the device never started talking
   const [speed, setSpeed] = useState(1);
   const [mode, setMode] = useState<Mode>("idle");
   const [shown, setShown] = useState(0);
@@ -39,7 +40,7 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
     run.current++;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
+    hush();
   }
 
   function step(i: number, token: number) {
@@ -57,8 +58,12 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
       const u = speak(line.text, line.speaker, voices, line.excitement);
       if (u) {
         u.rate = Math.min(2, u.rate * speed);
+        let started = false;
+        u.onstart = () => { started = true; setSilent(false); };
         u.onend = next;
         u.onerror = next;
+        // if the device hasn't started talking after a few seconds, say so on screen
+        window.setTimeout(() => { if (!started && token === run.current) setSilent(true); }, 3500);
         // some browsers never fire "end" (or have no voices); don't let the broadcast stall
         timer.current = window.setTimeout(next, 3000 + (line.text.length * 110) / speed);
         return;
@@ -112,8 +117,8 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
         <label className="field"><span>Speed <b>{speed}×</b></span>
           <input type="range" min={0.5} max={3} step={0.25} value={speed} onChange={(e) => setSpeed(Number(e.target.value))} />
         </label>
-        <label className="check" title={typeof speechSynthesis === "undefined" ? "This browser can't read aloud" : ""}>
-          <input type="checkbox" checked={voiceOn} disabled={typeof speechSynthesis === "undefined"} onChange={(e) => setVoiceOn(e.target.checked)} /> Read it out loud
+        <label className="check">
+          <input type="checkbox" checked={voiceOn} disabled={!canSpeak} onChange={(e) => setVoiceOn(e.target.checked)} /> Read it out loud
         </label>
       </div>
       <div className="radio-controls">
@@ -127,6 +132,14 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
           <span className="muted">{inningText}</span>
         </div>
       </div>
+      {!canSpeak && <p className="notice">This browser can't read aloud, so the broadcast will scroll as text. If you opened the link inside another app, open it in Safari or Chrome instead to hear it.</p>}
+      {canSpeak && voiceOn && silent && (
+        <p className="notice">
+          No sound? On iPhone, flip the ring/silent switch off and turn the volume up (read-aloud follows the ringer). If you opened the link
+          inside another app, open it in Safari or Chrome. The broadcast keeps going as text either way.
+          <button className="link" onClick={() => { const a = pbp; if (a) speak("Testing, one, two, three. Can you hear me?", a, voices, 0.3); }}>Test sound</button>
+        </p>
+      )}
       {visible.length > 0 && (
         <div className="radio-live">
         <Diamond event={mode === "done" && shown === lines.length && liveIdx < 0 ? null : livePlay} names={names} walkoff={liveIdx === wo} compact duration={(livePlay?.result === "HR" || liveIdx === wo ? 3600 : 2200) / speed} />
