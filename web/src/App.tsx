@@ -8,6 +8,7 @@ import { describe, keyPlays, nameMap } from "./describe";
 import { AnnouncerEditor } from "./AnnouncerEditor";
 import { useAnnouncers } from "./announcerStore";
 import { Radio } from "./Radio";
+import { Highlights } from "./Highlights";
 import type { Announcer } from "../../src/commentary/announcers";
 
 type Series = { games: number; awayWins: number; awayRuns: number; homeRuns: number; margins: number[] };
@@ -309,19 +310,7 @@ function GameView({ g, announcers, onEditAnnouncers }: { g: GameResult; announce
 
       <Radio g={g} announcers={announcers} onEditAnnouncers={onEditAnnouncers} />
 
-      {key.length > 0 && (
-        <section className="card">
-          <h2>Key plays</h2>
-          <ol className="plays">
-            {key.map(({ event, swing }, i) => (
-              <li key={i}>
-                <span className="tag">{event.half === "top" ? "▲" : "▼"}{event.inning}</span> {describe(event, names)}
-                <span className="muted"> ({swing > 0 ? "+" : ""}{Math.round(swing * 100)}% home win chance)</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
+      {key.length > 0 && <Highlights plays={key} names={names} />}
 
       <section className="two">
         {[g.away, g.home].map((t) => <Box key={t.team.id} t={t} />)}

@@ -4,8 +4,21 @@ Pick any two teams in baseball history, set the era knobs, and play.
 
 - `src/`: the game engine and its era-adjustment knobs (step 1 of the plan)
 - `web/`: the pick-two-teams web page (step 2)
+- `web/src/Diamond.tsx`: animated key-play replays (step 4)
 - `src/commentary/`: the radio booth, with announcer profiles and the broadcast writer (step 3)
 - `supabase/`: database tables, for when the data moves to Supabase
+
+## Key-play animations
+
+Each game's biggest moments (every home run, the walk-off, and the plays that swung the win probability most) get
+an animated replay on a little SVG ballpark. The replay is built from the play's real data: where the ball went, who was on base,
+who scored and who was thrown out. Big moments get a gag:
+- fireworks and "GONE!" for a home run;
+- a giant K (sometimes backwards) for a strikeout;
+- "TURN TWO!" for a double play;
+- a confetti party for a walk-off.
+
+Press **Play highlight reel** to run them all, or watch the small diamond replay every play while the radio broadcast is on.
 
 ## Radio broadcast
 
@@ -46,6 +59,8 @@ The engine runs entirely in the browser, so no server is needed. By default the 
 3. Put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `web/.env.local` (or in your host's settings).
 
 On Vercel, set the project root directory to `web`.
+
+**GitHub Pages:** `.github/workflows/pages.yml` runs the tests and builds the site on every pull request, and publishes it on every push to `main`. One-time setup: go to the repo's Settings → Pages and set Source to "GitHub Actions". The site then lives at https://haganational.github.io/BaseballForever/.
 
 ## Engine
 

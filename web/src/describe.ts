@@ -44,14 +44,32 @@ export function describe(e: GameEvent, names: Map<string, string>): string {
 }
 
 /** Plays that swung the win probability the most: candidates for animations in step 4. */
-export function keyPlays(g: GameResult, howMany = 5): { event: PlayEvent; swing: number }[] {
+export interface KeyPlay { event: PlayEvent; index: number; swing: number; walkoff: boolean }
+
+/** The game-ending play, if the home team walked it off. */
+export function walkoffIndex(g: GameResult): number {
+  for (let i = g.events.length - 1; i >= 0; i--) {
+    const e = g.events[i];
+    if (e.kind === "pa") return g.winner === "home" && e.half === "bottom" && e.inning >= 9 && e.scored.length > 0 ? i : -1;
+  }
+  return -1;
+}
+
+/**
+ * Plays that swung the win probability the most, in game order. Every home run and the
+ * walk-off always make the cut, since those are the ones worth animating.
+ */
+export function keyPlays(g: GameResult, howMany = 6): KeyPlay[] {
   let prev = 0.54;
-  const out: { event: PlayEvent; swing: number }[] = [];
-  for (const e of g.events) {
-    if (e.kind !== "pa") continue;
+  const all: KeyPlay[] = [];
+  const wo = walkoffIndex(g);
+  g.events.forEach((e, index) => {
+    if (e.kind !== "pa") return;
     const swing = e.homeWinProb - prev;
     prev = e.homeWinProb;
-    out.push({ event: e, swing });
-  }
-  return out.sort((a, b) => Math.abs(b.swing) - Math.abs(a.swing)).slice(0, howMany).filter((x) => Math.abs(x.swing) >= 0.08);
+    all.push({ event: e, index, swing, walkoff: index === wo });
+  });
+  const must = all.filter((k) => k.walkoff || k.event.result === "HR");
+  const rest = all.filter((k) => !must.includes(k) && Math.abs(k.swing) >= 0.08).sort((a, b) => Math.abs(b.swing) - Math.abs(a.swing));
+  return [...must, ...rest].slice(0, Math.max(howMany, must.length)).sort((a, b) => a.index - b.index);
 }

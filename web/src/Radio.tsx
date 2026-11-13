@@ -3,6 +3,9 @@ import type { Announcer } from "../../src/commentary/announcers";
 import { generateBroadcast } from "../../src/commentary/broadcast";
 import type { GameResult } from "../../src/game";
 import { speak, useVoices } from "./announcerStore";
+import { Diamond } from "./Diamond";
+import { nameMap, walkoffIndex } from "./describe";
+import type { PlayEvent } from "../../src/game";
 
 type Mode = "idle" | "playing" | "paused" | "done";
 
@@ -81,6 +84,12 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
   const score = ev ? ev.score : { away: 0, home: 0 };
   const inningText = ev ? `${ev.half === "top" ? "▲" : "▼"} ${ev.inning}` : "Pregame";
   const visible = lines.slice(0, shown);
+  const names = useMemo(() => nameMap(g), [g]);
+  const wo = useMemo(() => walkoffIndex(g), [g]);
+  // the live diamond shows the most recent play that has been called
+  let liveIdx = -1;
+  for (let i = shown - 1; i >= 0; i--) { const ei = lines[i].eventIndex; if (ei >= 0 && g.events[ei].kind === "pa") { liveIdx = ei; break; } }
+  const livePlay = liveIdx >= 0 ? (g.events[liveIdx] as PlayEvent) : null;
 
   return (
     <section className="card radio">
@@ -119,6 +128,8 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
         </div>
       </div>
       {visible.length > 0 && (
+        <div className="radio-live">
+        <Diamond event={mode === "done" && shown === lines.length && liveIdx < 0 ? null : livePlay} names={names} walkoff={liveIdx === wo} compact duration={(livePlay?.result === "HR" || liveIdx === wo ? 3600 : 2200) / speed} />
         <ol className="transcript" ref={listRef}>
           {visible.map((l, i) => (
             <li key={i} className={l.excitement >= 0.75 ? "hot" : ""}>
@@ -126,6 +137,7 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
             </li>
           ))}
         </ol>
+        </div>
       )}
       {visible.length === 0 && <p className="muted">Press Listen live to hear the game called from the first pitch, or show the whole transcript.</p>}
     </section>

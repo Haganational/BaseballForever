@@ -101,3 +101,37 @@ textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border
 .inline-field { min-width: 200px; }
 .editor-body { border-top: 1px solid var(--line); padding-top: 14px; }
 .phrases { margin-top: 10px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+/* ---- animated diamond ---- */
+:root { --grass: #4f8f4a; --grass2: #5d9e57; --dirt: #c79a63; --stands: #2f3b33; --chalk: #f7f4ea; --wall: #1e5b3a; }
+@media (prefers-color-scheme: dark) { :root { --grass: #33693a; --grass2: #3d7843; --dirt: #9c7448; --stands: #0e1310; --wall: #144a2c; } }
+.diamond-wrap { margin: 0; }
+.diamond { width: 100%; max-width: 460px; display: block; margin: 0 auto; border-radius: 10px; }
+.diamond-wrap figcaption { text-align: center; margin-top: 8px; font-weight: 600; }
+.diamond .stands { fill: var(--stands); }
+.diamond .grass { fill: var(--grass); }
+.diamond .infield-grass { fill: var(--grass2); }
+.diamond .dirt { fill: var(--dirt); }
+.diamond .wall { fill: none; stroke: var(--wall); stroke-width: 6; }
+.diamond .base { fill: var(--chalk); }
+.diamond .fielder { fill: #f2f2f2; stroke: #333; stroke-width: 1.2; }
+.diamond .runner { fill: #e0533a; stroke: #fff; stroke-width: 1.5; }
+.diamond .batter { fill: #f0b429; stroke: #fff; stroke-width: 1.5; }
+.diamond .scored circle { fill: #ffd84d; }
+.diamond .runner-label { fill: #fff; font: 600 10px system-ui, sans-serif; text-anchor: middle; paint-order: stroke; stroke: rgba(0,0,0,0.6); stroke-width: 3px; }
+.diamond .ball { fill: #fff; stroke: #c0392b; stroke-width: 1; }
+.diamond .ball-shadow { fill: #000; }
+.diamond .throw { fill: none; stroke: rgba(255,255,255,0.45); stroke-dasharray: 4 4; stroke-width: 1.5; }
+.diamond .gag-k { font: 900 150px Georgia, serif; fill: #ff4d4d; text-anchor: middle; dominant-baseline: middle; paint-order: stroke; stroke: #fff; stroke-width: 6px; }
+.diamond .gag-k.backwards { transform: scaleX(-1); transform-origin: 200px 210px; }
+.diamond .gag-banner { font-family: Georgia, serif; font-weight: 900; fill: #ffd84d; text-anchor: middle; paint-order: stroke; stroke: #7a2e12; stroke-width: 5px; letter-spacing: 0.04em; }
+.diamond .gag-runs { font: 800 18px system-ui, sans-serif; fill: #ffd84d; text-anchor: middle; paint-order: stroke; stroke: rgba(0,0,0,0.6); stroke-width: 3px; }
+.diamond .spark.s0 { fill: #ffd84d; } .diamond .spark.s1 { fill: #ff6b6b; } .diamond .spark.s2 { fill: #6bc5ff; } .diamond .spark.s3 { fill: #ffffff; }
+.hl-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 10px; }
+.highlights .plays { list-style: none; padding: 0; }
+.highlights .plays li { padding: 6px 8px; border-radius: 8px; }
+.highlights .plays li.active { background: var(--win); }
+.play-btn { padding: 2px 9px; margin-right: 6px; font-size: 0.8rem; }
+.radio-live { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 14px; align-items: start; }
+.diamond-wrap.compact .diamond { max-width: 260px; }
+@media (max-width: 720px) { .hl-grid, .radio-live { grid-template-columns: 1fr; } .diamond-wrap.compact .diamond { max-width: 320px; } }
