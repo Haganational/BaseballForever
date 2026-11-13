@@ -11,7 +11,9 @@
     "sim": "tsx src/cli.ts",
     "validate": "tsx src/validate.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:teams": "tsx scripts/build-teams.ts",
+    "upload:supabase": "tsx scripts/upload-supabase.ts"
   },
   "keywords": [],
   "author": "",

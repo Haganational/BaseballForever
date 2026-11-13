@@ -20,6 +20,8 @@ export interface Environment {
   wp: number;
   /** share of starts that were complete games (drives "era" bullpen usage) */
   cgRate: number;
+  /** fielding errors per team per game */
+  errorsPerGame: number;
   /** spread of player talent per event: SD of log(player rate / league rate) among regulars */
   spread: Record<RatedEv, number>;
 }
@@ -72,6 +74,7 @@ export function buildEnvironment(season: RawSeason, lg: string, spread: Record<R
     sbSuccess: L.CS != null && attempts > 0 && L.CS > 0 ? (L.SB ?? 0) / attempts : 0.68,
     wp: 0.008,
     cgRate: L.CG != null && L.GS ? L.CG / L.GS : 0.3,
+    errorsPerGame: L.E && L.G ? L.E / (L.G * 2) : 0,
     spread,
   };
 }
@@ -95,6 +98,7 @@ export function blendEnvironments(envs: Environment[], label: string): Environme
     sbSuccess: avg((e) => e.sbSuccess),
     wp: avg((e) => e.wp),
     cgRate: avg((e) => e.cgRate),
+    errorsPerGame: avg((e) => e.errorsPerGame),
     spread,
   };
 }

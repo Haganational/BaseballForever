@@ -1,18 +1,10 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { blendEnvironments, type Environment } from "./environment.js";
+import type { Environment } from "./environment.js";
+import { allTimeEnvironment, type DataSource } from "./source.js";
+export { allTimeEnvironment, type DataSource };
 import type { RawSeason, RawTeam } from "./types.js";
-
-/**
- * Data access. Kept behind this small interface so the web app can later swap the
- * local JSON files for Supabase without touching the engine.
- */
-export interface DataSource {
-  season(year: number): RawSeason;
-  environment(year: number, lg: string): Environment;
-  allEnvironments(): Environment[];
-}
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const DATA_DIR = join(here, "..", "data");
@@ -42,6 +34,11 @@ export class FileDataSource implements DataSource {
     return this.envs!;
   }
 
+  leagueErrorsPerGame(year: number, lg: string): number {
+    const L = this.season(year).leagues[lg];
+    return L && L.E && L.G ? L.E / (L.G * 2) : 0;
+  }
+
   environment(year: number, lg: string): Environment {
     const e = this.loadEnvs()[`${year}${lg}`];
     if (!e) throw new Error(`No environment for ${year} ${lg}`);
@@ -54,7 +51,7 @@ export class FileDataSource implements DataSource {
 }
 
 /** Find a team by id like "1927NYA", or by a looser "1927 Yankees" style query. */
-export function findTeam(ds: DataSource, query: string): RawTeam {
+export function findTeam(ds: FileDataSource, query: string): RawTeam {
   const m = query.trim().match(/^(\d{4})\s*(.*)$/);
   if (!m) throw new Error(`Team query should start with a year, e.g. "1927 Yankees" or "1927NYA": ${query}`);
   const year = Number(m[1]);
@@ -68,8 +65,3 @@ export function findTeam(ds: DataSource, query: string): RawTeam {
   throw new Error(`No ${year} team matching "${m[2]}". Teams that year: ${teams.map((t) => `${t.teamID} (${t.name})`).join(", ")}`);
 }
 
-/** All-time MLB average world (AL + NL, 1901 onward). */
-export function allTimeEnvironment(ds: DataSource): Environment {
-  const envs = ds.allEnvironments().filter((e) => (e.lg === "AL" || e.lg === "NL") && e.year >= 1901);
-  return { ...blendEnvironments(envs, "All-time MLB average"), dh: false };
-}

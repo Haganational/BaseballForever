@@ -1,4 +1,4 @@
-import { allTimeEnvironment, type DataSource } from "./data.js";
+import { allTimeEnvironment, type DataSource } from "./source.js";
 import { blendEnvironments, type Environment } from "./environment.js";
 import { withDefaults, type Knobs } from "./knobs.js";
 import { equipmentMultipliers, matchup, type MatchupContext } from "./matchup.js";
@@ -182,8 +182,7 @@ export function simulateGame(ds: DataSource, awayRaw: RawTeam, homeRaw: RawTeam,
 
   const mkTeam = (raw: RawTeam) => {
     const env = ds.environment(raw.year, raw.lg ?? "NL");
-    const L = ds.season(raw.year).leagues[raw.lg ?? "NL"];
-    const lgErrPerGame = L && L.E && L.G ? L.E / (L.G * 2) : 0;
+    const lgErrPerGame = ds.leagueErrorsPerGame(raw.year, raw.lg ?? "NL");
     return buildTeam(raw, env, knobs, lgErrPerGame);
   };
   const awayT = mkTeam(awayRaw);

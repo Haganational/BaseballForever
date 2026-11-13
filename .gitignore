@@ -1,2 +1,8 @@
 node_modules/
 scratch/
+data/teams/
+web/node_modules/
+web/public/data/
+web/dist/
+.env
+.env.*

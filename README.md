@@ -1,6 +1,33 @@
-# The Ultimate Fantasy Baseball Simulator: engine
+# Baseball Forever
 
-This is step 1 of the plan: the game engine and its era-adjustment knobs. It simulates a full game,
+Pick any two teams in baseball history, set the era knobs, and play.
+
+- `src/`: the game engine and its era-adjustment knobs (step 1 of the plan)
+- `web/`: the pick-two-teams web page (step 2)
+- `supabase/`: database tables, for when the data moves to Supabase
+
+## Web page
+
+```bash
+cd web
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # static site in web/dist, deployable to Vercel, Netlify or GitHub Pages
+```
+
+The engine runs entirely in the browser, so no server is needed. By default the page reads static data files that
+`npm run prepare-data` builds from `data/`. To read from Supabase instead:
+
+1. Run `supabase/schema.sql` in the Supabase SQL editor.
+2. From the repo root: `npm install`, then
+   `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run upload:supabase` (about 3,600 team-seasons).
+3. Put `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `web/.env.local` (or in your host's settings).
+
+On Vercel, set the project root directory to `web`.
+
+## Engine
+
+The engine It simulates a full game,
 one plate appearance at a time, between any two teams from 1871 to 2025 (Negro Leagues included). The output is a box score.
 Radio commentary (step 3) and key-play animations (step 4) will be built on the detailed play-by-play
 event log the engine already produces.
