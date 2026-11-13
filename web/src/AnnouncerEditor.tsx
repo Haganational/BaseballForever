@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { blankAnnouncer, type Announcer } from "../../src/commentary/announcers";
 import { speak, useVoices } from "./announcerStore";
+import { canStudio, delivery, loadVoice, playClip, STUDIO_VOICES, studioVoiceFor, synth, unlockAudio } from "./tts/neural";
 
 const PHRASE_FIELDS: { key: keyof Announcer["phrases"]; label: string; help: string; colorOnly?: boolean; pbpOnly?: boolean }[] = [
   { key: "intro", label: "Opening line", help: "Said at the top of the broadcast" },
@@ -21,6 +22,22 @@ export function AnnouncerEditor(props: { all: Announcer[]; custom: Announcer[]; 
   const set = <K extends keyof Announcer>(k: K, v: Announcer[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d));
   const setPhrases = (k: keyof Announcer["phrases"], text: string) =>
     setDraft((d) => (d ? { ...d, phrases: { ...d.phrases, [k]: text.split("\n").map((s) => s.trim()).filter(Boolean) } } : d));
+
+  const [testing, setTesting] = useState(false);
+  const testVoice = async (a: Announcer) => {
+    const text = a.phrases.homeRun[0]?.replace(/\{batter(Last)?\}/g, "Ruth").replace(/\{[a-zA-Z]+\}/g, "") ?? `Hi, I'm ${a.name}, and this is how I sound.`;
+    if (!canStudio) { speak(text, a, voices, 0.8); return; }
+    unlockAudio();
+    setTesting(true);
+    try {
+      const v = studioVoiceFor(a);
+      await loadVoice(v);
+      const d = delivery(a, 0.8, 1);
+      const c = await synth(text, v, d.lengthScale);
+      setTesting(false);
+      await playClip(c.pcm, c.sampleRate, d.cents);
+    } catch { setTesting(false); speak(text, a, voices, 0.8); }
+  };
 
   const startFrom = (a: Announcer | null, role: "pbp" | "color" = "pbp") => {
     const base = a ? { ...structuredClone(a), id: blankAnnouncer().id, name: `${a.name} (my version)`, builtIn: false } : blankAnnouncer(role);
@@ -79,12 +96,18 @@ export function AnnouncerEditor(props: { all: Announcer[]; custom: Announcer[]; 
               <input type="range" min={0} max={1} step={0.05} value={draft.chattiness} onChange={(e) => set("chattiness", Number(e.target.value))} />
               <small className="muted">0 just the facts, 1 never stops</small>
             </label>
-            <label className="field"><span>Voice</span>
+            <label className="field"><span>Studio voice</span>
+              <select value={studioVoiceFor(draft)} onChange={(e) => set("voice", { ...draft.voice, neural: e.target.value })}>
+                {STUDIO_VOICES.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+              </select>
+              <small className="muted">Used when Sound is set to Studio voices. Speed and pitch below shape it.</small>
+            </label>
+            <label className="field"><span>Phone voice</span>
               <select value={draft.voice.name} onChange={(e) => set("voice", { ...draft.voice, name: e.target.value })}>
                 <option value="">Browser default</option>
                 {voices.map((v) => <option key={v.name} value={v.name}>{v.name}</option>)}
               </select>
-              <small className="muted">Voices come from your device, so they differ between phone and computer</small>
+              <small className="muted">Only for the phone's built-in voice option. These come from your device, so they differ between phone and computer</small>
             </label>
             <label className="field"><span>Talking speed <b>{draft.voice.rate}</b></span>
               <input type="range" min={0.5} max={1.8} step={0.05} value={draft.voice.rate} onChange={(e) => set("voice", { ...draft.voice, rate: Number(e.target.value) })} />
@@ -104,7 +127,7 @@ export function AnnouncerEditor(props: { all: Announcer[]; custom: Announcer[]; 
           </div>
           <div className="radio-controls">
             <button className="primary" onClick={() => save({ ...draft, builtIn: false })}>Save announcer</button>
-            <button onClick={() => speak(draft.phrases.homeRun[0]?.replace(/\{batter(Last)?\}/g, "Ruth") ?? `Hi, I'm ${draft.name}, and this is how I sound.`, draft, voices, 0.8)}>🔊 Test voice</button>
+            <button disabled={testing} onClick={() => testVoice(draft)}>{testing ? "Warming up…" : "🔊 Test voice"}</button>
             {custom.some((c) => c.id === draft.id) && <button onClick={() => { remove(draft.id); setDraft(null); }}>Delete</button>}
           </div>
         </div>

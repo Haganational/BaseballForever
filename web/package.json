@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "prepare-data": "node scripts/prepare-data.mjs",
+    "prepare-data": "node scripts/prepare-data.mjs && node scripts/prepare-tts.mjs",
     "dev": "npm run prepare-data && vite",
     "build": "npm run prepare-data && tsc --noEmit && vite build",
     "preview": "vite preview"
@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@diffusionstudio/piper-wasm": "^1.0.0",
+    "onnxruntime-web": "^1.18.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

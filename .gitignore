@@ -6,3 +6,6 @@ web/public/data/
 web/dist/
 .env
 .env.*
+web/public/voices/
+web/public/tts/*
+!web/public/tts/worker.js
