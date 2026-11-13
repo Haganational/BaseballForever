@@ -85,3 +85,19 @@ tbody th { font-weight: 500; }
   .two .card { margin-bottom: 0; }
 }
 .results-anchor { scroll-margin-top: 12px; }
+
+.center { text-align: center; }
+button.link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; cursor: pointer; }
+.radio-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.radio-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0 8px; }
+.mini-score { margin-left: auto; display: flex; gap: 14px; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.transcript { max-height: 380px; overflow: auto; margin: 0; padding: 10px 12px 10px 34px; background: var(--bg); border-radius: 8px; border: 1px solid var(--line); }
+.transcript li { margin: 6px 0; }
+.transcript li.hot { font-weight: 600; }
+.transcript b.pbp { color: var(--away); }
+.transcript b.color { color: var(--home); }
+textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; resize: vertical; }
+.editor-top { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 14px; }
+.inline-field { min-width: 200px; }
+.editor-body { border-top: 1px solid var(--line); padding-top: 14px; }
+.phrases { margin-top: 10px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }

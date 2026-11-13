@@ -5,6 +5,10 @@ import type { MemoryDataSource } from "../../src/source";
 import type { RawTeam } from "../../src/types";
 import { dataSourceLabel, loadEnvironments, loadIndex, loadTeam, type TeamIndexRow } from "./data";
 import { describe, keyPlays, nameMap } from "./describe";
+import { AnnouncerEditor } from "./AnnouncerEditor";
+import { useAnnouncers } from "./announcerStore";
+import { Radio } from "./Radio";
+import type { Announcer } from "../../src/commentary/announcers";
 
 type Series = { games: number; awayWins: number; awayRuns: number; homeRuns: number; margins: number[] };
 
@@ -26,6 +30,10 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const booth = useAnnouncers();
+  const [editing, setEditing] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (editing) editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [editing]);
   // bring fresh results into view
   useEffect(() => { if (game || series) resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [game, series]);
 
@@ -104,8 +112,12 @@ export default function App() {
 
       <div ref={resultsRef} className="results-anchor">
         {series && away && home && <SeriesCard s={series} away={away} home={home} />}
-        {game && <GameView g={game} />}
+        {game && <GameView g={game} announcers={booth.all} onEditAnnouncers={() => setEditing(true)} />}
       </div>
+      <div ref={editorRef} className="results-anchor">
+        {editing && <AnnouncerEditor all={booth.all} custom={booth.custom} save={booth.save} remove={booth.remove} onClose={() => setEditing(false)} />}
+      </div>
+      {!editing && <p className="muted small center"><button className="link" onClick={() => setEditing(true)}>🎙️ Create your own announcers</button></p>}
     </main>
   );
 }
@@ -265,7 +277,7 @@ function SeriesCard({ s, away, home }: { s: Series; away: RawTeam; home: RawTeam
 
 const ip = (outs: number) => `${Math.floor(outs / 3)}.${outs % 3}`;
 
-function GameView({ g }: { g: GameResult }) {
+function GameView({ g, announcers, onEditAnnouncers }: { g: GameResult; announcers: Announcer[]; onEditAnnouncers: () => void }) {
   const names = useMemo(() => nameMap(g), [g]);
   const innings = Math.max(9, g.away.lineScore.length, g.home.lineScore.length);
   const key = keyPlays(g);
@@ -294,6 +306,8 @@ function GameView({ g }: { g: GameResult }) {
         </div>
         <p className="muted small">Played in: {g.environment.label} (about {g.environment.runsPerGame.toFixed(2)} runs per team per game). Seed {g.knobs.seed}.</p>
       </section>
+
+      <Radio g={g} announcers={announcers} onEditAnnouncers={onEditAnnouncers} />
 
       {key.length > 0 && (
         <section className="card">
