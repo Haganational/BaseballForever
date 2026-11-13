@@ -60,6 +60,8 @@ The engine runs entirely in the browser, so no server is needed. By default the 
 
 On Vercel, set the project root directory to `web`.
 
+**GitHub Pages:** `.github/workflows/pages.yml` runs the tests and builds the site on every pull request, and publishes it on every push to `main`. One-time setup: go to the repo's Settings → Pages and set Source to "GitHub Actions". The site then lives at https://haganational.github.io/BaseballForever/.
+
 ## Engine
 
 The engine It simulates a full game,
