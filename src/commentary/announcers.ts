@@ -33,8 +33,10 @@ export interface Announcer {
     filler: string[];
   };
   voice: {
-    /** browser speech voice name (blank = default voice) */
+    /** browser speech voice name (blank = default voice), used only with the phone's built-in speech */
     name: string;
+    /** studio voice id (a Piper neural voice shipped with the site); blank = pick one by role */
+    neural?: string;
     /** 0.5 slow .. 2 fast */
     rate: number;
     /** 0 low .. 2 high */
@@ -68,7 +70,7 @@ export const BUILT_IN_ANNOUNCERS: Announcer[] = [
       walkoff: ["And that's the ballgame! {team} win it, and the fans are pouring onto the field!"],
       final: ["So it goes into the books. For all of us here, this is Red Holloway saying good night, everybody."],
     },
-    voice: { name: "", rate: 0.95, pitch: 0.9 },
+    voice: { neural: "en_US-ryan-medium", name: "", rate: 0.95, pitch: 0.9 },
   },
   {
     id: "dex-marlowe",
@@ -90,7 +92,7 @@ export const BUILT_IN_ANNOUNCERS: Announcer[] = [
       walkoff: ["WALK-OFF! {team} WIN IT! Bedlam! Absolute bedlam!"],
       final: ["That's a wrap, folks! What a game! Dex Marlowe signing off, catch you next time!"],
     },
-    voice: { name: "", rate: 1.15, pitch: 1.1 },
+    voice: { neural: "en_US-joe-medium", name: "", rate: 1.15, pitch: 1.1 },
   },
   {
     id: "doc-pemberton",
@@ -110,7 +112,7 @@ export const BUILT_IN_ANNOUNCERS: Announcer[] = [
         "Strike-throwing matters in any era. Walks will hurt you whether it's 1927 or 2024.",
       ],
     },
-    voice: { name: "", rate: 1.0, pitch: 0.8 },
+    voice: { neural: "en_US-lessac-medium", name: "", rate: 1.0, pitch: 0.8 },
   },
   {
     id: "gus-kowalski",
@@ -132,7 +134,7 @@ export const BUILT_IN_ANNOUNCERS: Announcer[] = [
         "Fundamentals. That's what wins ballgames. Fundamentals.",
       ],
     },
-    voice: { name: "", rate: 0.9, pitch: 0.7 },
+    voice: { neural: "en_US-norman-medium", name: "", rate: 0.9, pitch: 0.7 },
   },
 ];
 

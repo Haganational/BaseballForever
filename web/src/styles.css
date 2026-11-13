@@ -151,3 +151,4 @@ textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border
 }
 .check-log { margin: 8px 0; padding-left: 20px; font-family: ui-monospace, monospace; font-size: 0.82rem; }
 .check-log li { margin: 3px 0; }
+.head-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
