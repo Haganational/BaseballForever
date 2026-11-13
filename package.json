@@ -1,0 +1,26 @@
+{
+  "name": "ultimate-baseball-sim",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build:data": "python3 -I scripts/build_data.py",
+    "build:envs": "tsx scripts/build-envs.ts",
+    "sim": "tsx src/cli.ts",
+    "validate": "tsx src/validate.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "type": "module"
+}
