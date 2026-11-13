@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Announcer } from "../../src/commentary/announcers";
 import { generateBroadcast } from "../../src/commentary/broadcast";
 import type { GameResult } from "../../src/game";
-import { canSpeak, hush, speak, useVoices } from "./announcerStore";
+import { canSpeak, hush, soundCheck, speak, useVoices } from "./announcerStore";
 import { Diamond } from "./Diamond";
 import { nameMap, walkoffIndex } from "./describe";
 import type { PlayEvent } from "../../src/game";
@@ -17,6 +17,8 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
   const [voiceOn, setVoiceOn] = useState(canSpeak);
   const [silent, setSilent] = useState(false); // voice was asked for but the device never started talking
   const [speed, setSpeed] = useState(1);
+  const [checkLog, setCheckLog] = useState<string[] | null>(null);
+  const runCheck = () => { setCheckLog([]); soundCheck((l) => setCheckLog((xs) => [...(xs ?? []), l])); };
   const [mode, setMode] = useState<Mode>("idle");
   const [shown, setShown] = useState(0);
   const voices = useVoices();
@@ -32,8 +34,9 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
   useEffect(() => { stop(); setShown(0); setMode("idle"); }, [lines]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const el = listRef.current?.lastElementChild as HTMLElement | null;
-    if (el && mode === "playing") el.scrollIntoView({ block: "nearest" });
+    // scroll only the transcript box, never the page, so you can scroll away while it plays
+    const box = listRef.current;
+    if (box && mode === "playing") box.scrollTop = box.scrollHeight;
   }, [shown, mode]);
 
   function stop() {
@@ -100,7 +103,10 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
     <section className="card radio">
       <div className="radio-head">
         <h2>📻 Radio broadcast</h2>
-        <button className="link" onClick={onEditAnnouncers}>Create or edit announcers</button>
+        <span>
+          <button className="link" onClick={runCheck}>🔈 Sound check</button>
+          <button className="link" onClick={onEditAnnouncers}>Create or edit announcers</button>
+        </span>
       </div>
       <div className="grid">
         <label className="field"><span>Play-by-play</span>
@@ -133,12 +139,25 @@ export function Radio({ g, announcers, onEditAnnouncers }: { g: GameResult; anno
         </div>
       </div>
       {!canSpeak && <p className="notice">This browser can't read aloud, so the broadcast will scroll as text. If you opened the link inside another app, open it in Safari or Chrome instead to hear it.</p>}
-      {canSpeak && voiceOn && silent && (
+      {canSpeak && voiceOn && silent && !checkLog && (
         <p className="notice">
-          No sound? On iPhone, flip the ring/silent switch off and turn the volume up (read-aloud follows the ringer). If you opened the link
-          inside another app, open it in Safari or Chrome. The broadcast keeps going as text either way.
-          <button className="link" onClick={() => { const a = pbp; if (a) speak("Testing, one, two, three. Can you hear me?", a, voices, 0.3); }}>Test sound</button>
+          No sound? Turn the volume up (on iPhone, also flip the ring/silent switch off). If you opened the link inside another app,
+          open it in Safari or Chrome. The broadcast keeps going as text either way.
+          <button className="link" onClick={runCheck}>Run sound check</button>
         </p>
+      )}
+      {checkLog && (
+        <div className="notice">
+          <b>Sound check</b> <button className="link" onClick={() => setCheckLog(null)}>Close</button>
+          <ul className="check-log">{checkLog.map((l, i) => <li key={i}>{l}</li>)}</ul>
+          <p className="small muted">
+            Android: read-aloud uses the <b>media</b> volume, so press volume up while a line is playing, or check Settings › Sound › Media volume.
+            To test the phone's own speech engine, open Settings › Accessibility › Text-to-speech output and tap Play. If that's silent too,
+            install or update "Speech Services by Google" from the Play Store.
+            iPhone: flip the ring/silent switch off.
+          </p>
+          <button onClick={runCheck}>Run again</button>
+        </div>
       )}
       {visible.length > 0 && (
         <div className="radio-live">

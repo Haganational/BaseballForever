@@ -149,3 +149,5 @@ textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border
   .sticky-links { display: none; }
   .sticky-title { font-size: 0.85rem; }
 }
+.check-log { margin: 8px 0; padding-left: 20px; font-family: ui-monospace, monospace; font-size: 0.82rem; }
+.check-log li { margin: 3px 0; }
