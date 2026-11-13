@@ -10,5 +10,5 @@
     "noEmit": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "../src/source.ts", "../src/game.ts"]
+  "include": ["src", "../src/source.ts", "../src/game.ts", "../src/commentary"]
 }

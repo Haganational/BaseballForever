@@ -4,7 +4,29 @@ Pick any two teams in baseball history, set the era knobs, and play.
 
 - `src/`: the game engine and its era-adjustment knobs (step 1 of the plan)
 - `web/`: the pick-two-teams web page (step 2)
+- `src/commentary/`: the radio booth, with announcer profiles and the broadcast writer (step 3)
 - `supabase/`: database tables, for when the data moves to Supabase
+
+## Radio broadcast
+
+After a game, the page has a radio booth. Pick a play-by-play voice and, optionally, a color analyst, then press
+**Listen live**. The game is called line by line, read aloud with your device's built-in voices
+(you can switch the voice off and just read along). From the command line:
+
+```bash
+npm run radio -- "1927 Yankees" "2016 Cubs" --pbp dex-marlowe --color gus-kowalski --seed 3
+```
+
+Four original announcers come built in. Red Holloway and Dex Marlowe call play-by-play, and Doc Pemberton and Gus Kowalski are color analysts.
+**Create your own** in the page's announcer booth. Each profile can set:
+- a name and voice;
+- talking speed and pitch;
+- excitement and chattiness;
+- which team they root for;
+- their own lines for home runs, strikeouts, walk-offs and the sign-off, plus a color analyst's go-to remarks.
+
+Custom announcers are saved in your browser for now. The profile format is in `src/commentary/announcers.ts`.
+The broadcast is written from the game's event log plus each player's real season stats. The same game and seed always produce the same broadcast.
 
 ## Web page
 
