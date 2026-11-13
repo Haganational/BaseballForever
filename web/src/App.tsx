@@ -91,10 +91,12 @@ export default function App() {
 
   return (
     <main className="wrap">
-      <header className="top">
+      <header className="top" id="top">
         <h1>Baseball Forever</h1>
         <p className="sub">Any two teams from 1871 to 2025, era-adjusted. Data: Lahman Baseball Database via {dataSourceLabel}.</p>
       </header>
+      <StickyBar visible={Boolean(game || series)} title={away && home ? `${away.year} ${shortName(away.name)} at ${home.year} ${shortName(home.name)}` : ""}
+        onPlay={playOne} canPlay={ready} hasGame={Boolean(game)} />
 
       <section className="card matchup">
         <TeamSide label="Away" index={index} id={awayId} onPick={setAwayId} team={away} starter={awayStarter} onStarter={setAwayStarter} />
@@ -120,6 +122,36 @@ export default function App() {
       </div>
       {!editing && <p className="muted small center"><button className="link" onClick={() => setEditing(true)}>🎙️ Create your own announcers</button></p>}
     </main>
+  );
+}
+
+const shortName = (n: string) => n.split(" ").slice(-1)[0];
+const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+/** Pinned bar once a game has been played: jump around the page and play again without scrolling back up. */
+function StickyBar({ visible, title, onPlay, canPlay, hasGame }: { visible: boolean; title: string; onPlay: () => void; canPlay: boolean; hasGame: boolean }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 400);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  if (!visible || !scrolled) return null;
+  return (
+    <nav className="sticky-bar" aria-label="Game navigation">
+      <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Back to top">▲ Top</button>
+      <span className="sticky-title">{title}</span>
+      {hasGame && (
+        <span className="sticky-links">
+          <button className="link" onClick={() => jump("sec-score")}>Score</button>
+          <button className="link" onClick={() => jump("sec-radio")}>Radio</button>
+          <button className="link" onClick={() => jump("sec-highlights")}>Highlights</button>
+          <button className="link" onClick={() => jump("sec-box")}>Box</button>
+        </span>
+      )}
+      <button className="primary" disabled={!canPlay} onClick={onPlay}>New game</button>
+    </nav>
   );
 }
 
@@ -206,7 +238,9 @@ function KnobsPanel(p: {
   const parkMode = typeof k.park === "number" ? "custom" : k.park;
   return (
     <section className="card">
-      <h2>Knobs</h2>
+      {/* collapsed on phones so the game itself isn't buried under the settings */}
+      <details className="knobs" open={typeof window === "undefined" || window.innerWidth > 720}>
+      <summary><h2 className="inline">Knobs</h2> <span className="muted small">era, ballpark, ball, bullpen and more</span></summary>
       <div className="grid">
         <Choice label="Preset" help="How much of a season was skill vs. luck" value={p.preset} onChange={p.choosePreset}
           options={[["balanced", "Balanced (default)"], ["asItHappened", "As it happened"], ["trueTalent", "True talent (analyst)"]]} />
@@ -257,6 +291,7 @@ function KnobsPanel(p: {
           </label>
         </div>
       </details>
+      </details>
     </section>
   );
 }
@@ -289,7 +324,7 @@ function GameView({ g, announcers, onEditAnnouncers }: { g: GameResult; announce
   }
   return (
     <>
-      <section className="card">
+      <section className="card anchor" id="sec-score">
         <h2>Final{g.innings > 9 ? ` (${g.innings} innings)` : ""}</h2>
         <div className="scroll">
           <table className="linescore">
@@ -308,11 +343,11 @@ function GameView({ g, announcers, onEditAnnouncers }: { g: GameResult; announce
         <p className="muted small">Played in: {g.environment.label} (about {g.environment.runsPerGame.toFixed(2)} runs per team per game). Seed {g.knobs.seed}.</p>
       </section>
 
-      <Radio g={g} announcers={announcers} onEditAnnouncers={onEditAnnouncers} />
+      <div id="sec-radio" className="anchor"><Radio g={g} announcers={announcers} onEditAnnouncers={onEditAnnouncers} /></div>
 
-      {key.length > 0 && <Highlights plays={key} names={names} />}
+      <div id="sec-highlights" className="anchor">{key.length > 0 && <Highlights plays={key} names={names} />}</div>
 
-      <section className="two">
+      <section className="two anchor" id="sec-box">
         {[g.away, g.home].map((t) => <Box key={t.team.id} t={t} />)}
       </section>
 

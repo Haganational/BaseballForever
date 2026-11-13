@@ -29,7 +29,7 @@ export function useAnnouncers() {
 export function useVoices(): SpeechSynthesisVoice[] {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   useEffect(() => {
-    if (typeof speechSynthesis === "undefined") return;
+    if (!canSpeak) return;
     const load = () => setVoices(speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en")));
     load();
     speechSynthesis.addEventListener("voiceschanged", load);
@@ -38,14 +38,26 @@ export function useVoices(): SpeechSynthesisVoice[] {
   return voices;
 }
 
+export const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+
+/** Stop talking. Only cancels when something is queued: Safari drops the next line if you cancel an idle synth. */
+export function hush() {
+  if (!canSpeak) return;
+  if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+}
+
 export function speak(text: string, a: Announcer, voices: SpeechSynthesisVoice[], excitement = 0.3): SpeechSynthesisUtterance | null {
-  if (typeof speechSynthesis === "undefined") return null;
+  if (!canSpeak) return null;
   const u = new SpeechSynthesisUtterance(text);
-  const v = voices.find((x) => x.name === a.voice.name);
+  u.lang = "en-US";
+  // the chosen voice if this device has it, otherwise any English voice (some Android browsers stay silent without one)
+  const v = voices.find((x) => x.name === a.voice.name) ?? voices.find((x) => x.default) ?? voices[0];
   if (v) u.voice = v;
   // excited calls come out a little faster and higher
   u.rate = Math.min(2, a.voice.rate * (1 + 0.12 * excitement * a.excitement));
   u.pitch = Math.min(2, a.voice.pitch * (1 + 0.1 * excitement * a.excitement));
+  // Chrome sometimes leaves the synth paused after a tab switch
+  if (speechSynthesis.paused) speechSynthesis.resume();
   speechSynthesis.speak(u);
   return u;
 }
