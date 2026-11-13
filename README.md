@@ -4,8 +4,21 @@ Pick any two teams in baseball history, set the era knobs, and play.
 
 - `src/`: the game engine and its era-adjustment knobs (step 1 of the plan)
 - `web/`: the pick-two-teams web page (step 2)
+- `web/src/Diamond.tsx`: animated key-play replays (step 4)
 - `src/commentary/`: the radio booth, with announcer profiles and the broadcast writer (step 3)
 - `supabase/`: database tables, for when the data moves to Supabase
+
+## Key-play animations
+
+Each game's biggest moments (every home run, the walk-off, and the plays that swung the win probability most) get
+an animated replay on a little SVG ballpark. The replay is built from the play's real data: where the ball went, who was on base,
+who scored and who was thrown out. Big moments get a gag:
+- fireworks and "GONE!" for a home run;
+- a giant K (sometimes backwards) for a strikeout;
+- "TURN TWO!" for a double play;
+- a confetti party for a walk-off.
+
+Press **Play highlight reel** to run them all, or watch the small diamond replay every play while the radio broadcast is on.
 
 ## Radio broadcast
 
